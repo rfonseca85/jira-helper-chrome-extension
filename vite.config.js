@@ -13,5 +13,11 @@ module.exports = defineConfig({
         popup: resolve(__dirname, 'popup.html')
       }
     }
+  },
+  server: {
+    port: 3000
+  },
+  define: {
+    'process.env.APP_TITLE': JSON.stringify('Home')
   }
 });

@@ -1,87 +1,263 @@
-#root, .jira-helper-root {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: left;
-  font-family: system-ui, sans-serif;
+:root {
+  --primary-color: #0f172a;
+  --secondary-color: #646cff;
+  --text-color: #374151;
+  --light-text: #6b7280;
+  --card-bg: #ffffff;
+  --hover-bg: #f3f4f6;
+  --sidebar-width: 250px;
+  --header-height: 80px;
+  --success-color: #22c55e;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --border-color: #e5e7eb;
 }
 
-header {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f9fafb;
+  color: var(--text-color);
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+}
+
+.app-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: #fff;
+  border-right: 1px solid var(--border-color);
+  padding: 2rem 0;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  padding: 0 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.nav-items {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-color);
+  margin: 0.25rem 0;
+  font-weight: 500;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.nav-item.active {
+  background-color: var(--hover-bg);
+  border-left-color: var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.nav-item:hover:not(.active) {
+  background-color: var(--hover-bg);
+}
+
+.nav-icon {
+  margin-right: 0.75rem;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
 }
 
-nav {
-  margin-top: 1rem;
+.greeting {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--primary-color);
 }
-nav button {
-  margin-right: 1rem;
-  padding: 0.5em 1em;
-  border: none;
-  background: #eee;
-  border-radius: 4px;
+
+.card {
+  background-color: var(--card-bg);
+  border-radius: 0.75rem;
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--light-text);
+  font-weight: 500;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.card-change {
+  color: var(--success-color);
+  font-size: 0.875rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-input, 
+.form-textarea, 
+.form-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 0.875rem;
 }
-nav button.active {
-  background: #646cff;
-  color: #fff;
+
+.btn-primary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #5258cc;
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #1db954;
 }
 
 .tickets-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
+
 .ticket-card {
-  background: #f8f8ff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
+  background-color: var(--card-bg);
+  border-radius: 0.75rem;
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.status-indicator {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+
+/* Settings Page */
+.settings-section {
+  background-color: var(--card-bg);
+  border-radius: 0.75rem;
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+}
+
+.add-ticket-btn {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
 }
-.ticket-card input,
-.ticket-card textarea,
-.ticket-card select {
-  width: 100%;
-  padding: 0.5em;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-.ticket-card button {
-  align-self: flex-end;
-  background: #646cff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5em 1em;
-  cursor: pointer;
-}
-.create-all {
-  margin-top: 2rem;
-  background: #22c55e;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.75em 2em;
-  font-size: 1.1em;
-  cursor: pointer;
-}
-.settings-section {
+
+.tabs {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-width: 400px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
 }
-.settings-section label {
-  display: flex;
-  flex-direction: column;
+
+.tab {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-right: 1rem;
   font-weight: 500;
-  gap: 0.25rem;
+}
+
+.tab.active {
+  border-bottom-color: var(--secondary-color);
+  color: var(--secondary-color);
 }
 
 .logo {
@@ -110,10 +286,6 @@ nav button.active {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
-}
-
-.card {
-  padding: 2em;
 }
 
 .read-the-docs {

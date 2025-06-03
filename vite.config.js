@@ -9,8 +9,7 @@ module.exports = defineConfig({
   build: {
     rollupOptions: {
       input: {
-        options: resolve(__dirname, 'index.html'),
-        popup: resolve(__dirname, 'popup.html')
+        options: resolve(__dirname, 'index.html')
       }
     }
   },
@@ -18,6 +17,6 @@ module.exports = defineConfig({
     port: 3000
   },
   define: {
-    'process.env.APP_TITLE': JSON.stringify('Home')
+    'process.env.APP_TITLE': JSON.stringify('Generate Tickets')
   }
 });

@@ -1,6 +1,23 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
+// Components
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
+import TicketsTab from './components/tickets/TicketsTab';
+import GenerateTicketsTab from './components/tickets/GenerateTicketsTab';
+import SettingsTab from './components/tickets/SettingsTab';
+
+// Hooks
+import { useTickets } from './hooks/useTickets';
+import { useGeneratedTickets } from './hooks/useGeneratedTickets';
+
+// Context
+import { SettingsProvider, useSettings } from './context/SettingsContext';
+
+// Constants
+import { TABS } from './utils/constants';
+
 const TICKET_TYPES = ['Task', 'Bug', 'Story', 'Epic'];
 
 // Icons as SVG components
@@ -95,17 +112,14 @@ const JiraLogo = () => (
   </svg>
 );
 
-function App() {
-  const [tickets, setTickets] = useState([]);
-  const [settings, setSettings] = useState({
-    jiraApiKey: '',
-    jiraEndpoint: '',
-    openAIApiKey: ''
-  });
-  const [activeTab, setActiveTab] = useState('generate');
+/**
+ * Main application component
+ * @returns {JSX.Element} Application component
+ */
+function AppContent() {
+  const [activeTab, setActiveTab] = useState(TABS.GENERATE);
   const [status, setStatus] = useState('');
-  const [generationInput, setGenerationInput] = useState('');
-  const [generatedTickets, setGeneratedTickets] = useState([]);
+  const { settings, updateSetting } = useSettings();
 
   // Get current username
   const username = 'User';
@@ -115,679 +129,72 @@ function App() {
     document.title = 'Generate Tickets';
   }, []);
 
-  // Load settings from chrome.storage.local on mount
-  useEffect(() => {
-    if (window.chrome && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(
-        ['jiraApiKey', 'jiraEndpoint', 'openAIApiKey'],
-        (result) => {
-          setSettings({
-            jiraApiKey: result.jiraApiKey || '',
-            jiraEndpoint: result.jiraEndpoint || '',
-            openAIApiKey: result.openAIApiKey || ''
-          });
-        }
-      );
-    }
-  }, []);
+  // Initialize hooks
+  const { tickets, addTicket, updateTicket, reviewWithGPT, createAllTickets } =
+    useTickets(settings, setStatus);
 
-  // Save settings to chrome.storage.local on change
-  useEffect(() => {
-    if (window.chrome && chrome.storage && chrome.storage.local) {
-      chrome.storage.local.set(settings);
-    }
-  }, [settings]);
-
-  const addTicket = () => {
-    setTickets([
-      ...tickets,
-      {
-        id: crypto.randomUUID(),
-        title: '',
-        description: '',
-        type: TICKET_TYPES[0]
-      }
-    ]);
-  };
-
-  const updateTicket = (id, field, value) => {
-    setTickets(
-      tickets.map((t) => (t.id === id ? { ...t, [field]: value } : t))
-    );
-  };
-
-  const updateGeneratedTicket = (id, field, value) => {
-    setGeneratedTickets(
-      generatedTickets.map((t) => (t.id === id ? { ...t, [field]: value } : t))
-    );
-  };
-
-  // Call OpenAI API to improve ticket
-  const reviewWithGPT = async (id) => {
-    setStatus('Reviewing with GPT-4.1...');
-    const ticket = tickets.find((t) => t.id === id);
-    if (!ticket || !settings.openAIApiKey) {
-      setStatus('Missing OpenAI API key or ticket data.');
-      return;
-    }
-    try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings.openAIApiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are a helpful assistant that improves Jira ticket titles and descriptions.'
-            },
-            {
-              role: 'user',
-              content: `Title: ${ticket.title}\nDescription: ${ticket.description}\nImprove both for clarity and conciseness.`
-            }
-          ],
-          max_tokens: 400
-        })
-      });
-      const data = await res.json();
-      if (
-        data.choices &&
-        data.choices[0] &&
-        data.choices[0].message &&
-        data.choices[0].message.content
-      ) {
-        // Expecting: Title: ...\nDescription: ...
-        const improved = data.choices[0].message.content;
-        const match = improved.match(/Title:(.*)\nDescription:(.*)/s);
-        if (match) {
-          setTickets(
-            tickets.map((t) =>
-              t.id === id
-                ? { ...t, title: match[1].trim(), description: match[2].trim() }
-                : t
-            )
-          );
-          setStatus('Improved with GPT-4.1!');
-        } else {
-          setStatus('Could not parse GPT-4.1 response.');
-        }
-      } else {
-        setStatus('No response from GPT-4.1.');
-      }
-    } catch (e) {
-      setStatus('Error contacting OpenAI API.');
-    }
-  };
-
-  // Call OpenAI API to improve generated ticket
-  const improveGeneratedTicket = async (id) => {
-    setStatus('Improving ticket with GPT-4.1...');
-    const ticket = generatedTickets.find((t) => t.id === id);
-    if (!ticket || !settings.openAIApiKey) {
-      setStatus('Missing OpenAI API key or ticket data.');
-      return;
-    }
-    try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings.openAIApiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are a helpful assistant that improves Jira ticket titles and descriptions to follow the best Scrum practices.'
-            },
-            {
-              role: 'user',
-              content: `Title: ${ticket.title}\nDescription: ${ticket.description}\nImprove both for clarity, conciseness, and following the best Scrum practices.`
-            }
-          ],
-          max_tokens: 400
-        })
-      });
-      const data = await res.json();
-      if (
-        data.choices &&
-        data.choices[0] &&
-        data.choices[0].message &&
-        data.choices[0].message.content
-      ) {
-        // Expecting: Title: ...\nDescription: ...
-        const improved = data.choices[0].message.content;
-        const match = improved.match(/Title:(.*)\nDescription:(.*)/s);
-        if (match) {
-          setGeneratedTickets(
-            generatedTickets.map((t) =>
-              t.id === id
-                ? { ...t, title: match[1].trim(), description: match[2].trim() }
-                : t
-            )
-          );
-          setStatus('Improved with GPT-4.1!');
-        } else {
-          setStatus('Could not parse GPT-4.1 response.');
-        }
-      } else {
-        setStatus('No response from GPT-4.1.');
-      }
-    } catch (e) {
-      setStatus('Error contacting OpenAI API.');
-    }
-  };
-
-  // Generate tickets from input text
-  const generateTickets = async () => {
-    if (!generationInput.trim()) {
-      setStatus(
-        'Please enter a description or bullet points to generate tickets from.'
-      );
-      return;
-    }
-
-    if (!settings.openAIApiKey) {
-      setStatus('Missing OpenAI API key. Please configure it in Settings.');
-      return;
-    }
-
-    setStatus('Generating tickets with GPT-4.1...');
-
-    try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings.openAIApiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are a Scrum expert that creates well-structured Jira tickets. Generate 3-7 tickets based on the input, following best practices for task creation (clear title, actionable description, concise wording). Format each ticket as "Ticket 1\nTitle: <title>\nDescription: <description>\nType: <type>", where type is one of: Task, Bug, Story, Epic. Choose the most appropriate type for each ticket.'
-            },
-            {
-              role: 'user',
-              content: `Generate well-structured Scrum tickets based on this input:\n\n${generationInput}`
-            }
-          ],
-          max_tokens: 1500
-        })
-      });
-
-      const data = await res.json();
-
-      if (
-        data.choices &&
-        data.choices[0] &&
-        data.choices[0].message &&
-        data.choices[0].message.content
-      ) {
-        const content = data.choices[0].message.content;
-
-        // Parse the response to extract tickets
-        const ticketBlocks = content
-          .split(/Ticket \d+/)
-          .filter((block) => block.trim());
-
-        const newTickets = ticketBlocks.map((block) => {
-          const titleMatch = block.match(/Title:\s*(.*?)(?:\n|$)/);
-          const descriptionMatch = block.match(
-            /Description:\s*([\s\S]*?)(?:\nType:|$)/
-          );
-          const typeMatch = block.match(/Type:\s*(.*?)(?:\n|$)/);
-
-          return {
-            id: crypto.randomUUID(),
-            title: titleMatch ? titleMatch[1].trim() : '',
-            description: descriptionMatch ? descriptionMatch[1].trim() : '',
-            type:
-              typeMatch && TICKET_TYPES.includes(typeMatch[1].trim())
-                ? typeMatch[1].trim()
-                : TICKET_TYPES[0]
-          };
-        });
-
-        setGeneratedTickets(newTickets);
-        setStatus(`Generated ${newTickets.length} tickets!`);
-      } else {
-        setStatus('No response from GPT-4.1.');
-      }
-    } catch (e) {
-      console.error(e);
-      setStatus('Error contacting OpenAI API.');
-    }
-  };
-
-  // Create a single ticket in Jira
-  const createTicketInJira = async (ticket) => {
-    setStatus('Creating ticket in Jira...');
-    if (!settings.jiraApiKey || !settings.jiraEndpoint) {
-      setStatus('Missing Jira API key or endpoint.');
-      return;
-    }
-
-    try {
-      const res = await fetch(settings.jiraEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings.jiraApiKey}`
-        },
-        body: JSON.stringify({
-          fields: {
-            summary: ticket.title,
-            description: ticket.description,
-            issuetype: { name: ticket.type },
-            project: { key: 'PROJECT' } // TODO: let user configure project key
-          }
-        })
-      });
-
-      if (res.ok) {
-        setStatus('Ticket created successfully!');
-      } else {
-        setStatus('Failed to create ticket in Jira.');
-      }
-    } catch (e) {
-      setStatus('Error contacting Jira API.');
-    }
-  };
-
-  // Create all tickets in Jira
-  const createAllTickets = async () => {
-    setStatus('Creating tickets in Jira...');
-    if (!settings.jiraApiKey || !settings.jiraEndpoint) {
-      setStatus('Missing Jira API key or endpoint.');
-      return;
-    }
-    let success = 0;
-    let fail = 0;
-    for (const ticket of tickets) {
-      try {
-        const res = await fetch(settings.jiraEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${settings.jiraApiKey}`
-          },
-          body: JSON.stringify({
-            fields: {
-              summary: ticket.title,
-              description: ticket.description,
-              issuetype: { name: ticket.type },
-              project: { key: 'PROJECT' } // TODO: let user configure project key
-            }
-          })
-        });
-        if (res.ok) {
-          success++;
-        } else {
-          fail++;
-        }
-      } catch (e) {
-        fail++;
-      }
-    }
-    setStatus(`Created: ${success}, Failed: ${fail}`);
-  };
-
-  // Create all generated tickets in Jira
-  const createAllGeneratedTickets = async () => {
-    setStatus('Creating tickets in Jira...');
-    if (!settings.jiraApiKey || !settings.jiraEndpoint) {
-      setStatus('Missing Jira API key or endpoint.');
-      return;
-    }
-    let success = 0;
-    let fail = 0;
-    for (const ticket of generatedTickets) {
-      try {
-        const res = await fetch(settings.jiraEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${settings.jiraApiKey}`
-          },
-          body: JSON.stringify({
-            fields: {
-              summary: ticket.title,
-              description: ticket.description,
-              issuetype: { name: ticket.type },
-              project: { key: 'PROJECT' } // TODO: let user configure project key
-            }
-          })
-        });
-        if (res.ok) {
-          success++;
-        } else {
-          fail++;
-        }
-      } catch (e) {
-        fail++;
-      }
-    }
-    setStatus(`Created: ${success}, Failed: ${fail}`);
-  };
-
-  const updateSettings = (field, value) => {
-    setSettings({ ...settings, [field]: value });
-  };
-
-  // Get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  // Clear all generated tickets
-  const clearGeneratedTickets = () => {
-    setGeneratedTickets([]);
-    setStatus('All generated tickets cleared.');
-  };
+  const {
+    generatedTickets,
+    generationInput,
+    setGenerationInput,
+    updateGeneratedTicket,
+    generateTickets,
+    improveGeneratedTicket,
+    createTicketInJira,
+    createAllGeneratedTickets,
+    clearGeneratedTickets
+  } = useGeneratedTickets(settings, setStatus);
 
   return (
     <div className="app-container">
       {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-logo">
-          <JiraLogo />
-          <span style={{ marginLeft: '10px' }}>Jira Helper</span>
-        </div>
-        <div className="nav-items">
-          <div
-            className={`nav-item ${activeTab === 'generate' ? 'active' : ''}`}
-            onClick={() => setActiveTab('generate')}
-          >
-            <span className="nav-icon">
-              <GenerateIcon />
-            </span>
-            Generate Tickets
-          </div>
-          <div
-            className={`nav-item ${activeTab === 'tickets' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tickets')}
-          >
-            <span className="nav-icon">
-              <HomeIcon />
-            </span>
-            Home
-          </div>
-          <div
-            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
-            <span className="nav-icon">
-              <SettingsIcon />
-            </span>
-            Settings
-          </div>
-        </div>
-      </div>
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
       <div className="main-content">
-        <div className="header">
-          <h1 className="greeting">
-            {getGreeting()}, {username}
-          </h1>
-        </div>
+        <Header username={username} status={status} />
 
-        {status && (
-          <div className="card" style={{ marginBottom: '1em' }}>
-            {status}
-          </div>
+        {activeTab === TABS.GENERATE && (
+          <GenerateTicketsTab
+            generatedTickets={generatedTickets}
+            generationInput={generationInput}
+            setGenerationInput={setGenerationInput}
+            updateGeneratedTicket={updateGeneratedTicket}
+            generateTickets={generateTickets}
+            improveGeneratedTicket={improveGeneratedTicket}
+            createTicketInJira={createTicketInJira}
+            createAllGeneratedTickets={createAllGeneratedTickets}
+            clearGeneratedTickets={clearGeneratedTickets}
+          />
         )}
 
-        {activeTab === 'generate' && (
-          <>
-            <div className="card">
-              <h2 className="card-title">Generate Scrum Tickets</h2>
-              <p style={{ marginBottom: '1rem' }}>
-                Enter a project description, problem statement, or bullet points
-                to generate well-structured Scrum tickets.
-              </p>
-
-              <div className="form-group">
-                <textarea
-                  className="form-textarea"
-                  placeholder="Paste or write a description of your project, problem, or a list of bullet points..."
-                  value={generationInput}
-                  onChange={(e) => setGenerationInput(e.target.value)}
-                  style={{ minHeight: '150px' }}
-                />
-              </div>
-
-              <button
-                className="btn btn-primary"
-                onClick={generateTickets}
-                style={{ width: '100%' }}
-              >
-                Generate Tickets
-              </button>
-            </div>
-
-            {generatedTickets.length > 0 && (
-              <>
-                <div className="tickets-list">
-                  {generatedTickets.map((ticket) => (
-                    <div key={ticket.id} className="ticket-card">
-                      <div className="form-group">
-                        <label className="form-label">Title</label>
-                        <input
-                          className="form-input"
-                          type="text"
-                          value={ticket.title}
-                          onChange={(e) =>
-                            updateGeneratedTicket(
-                              ticket.id,
-                              'title',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="form-label">Description</label>
-                        <textarea
-                          className="form-textarea"
-                          value={ticket.description}
-                          onChange={(e) =>
-                            updateGeneratedTicket(
-                              ticket.id,
-                              'description',
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="form-label">Type</label>
-                        <select
-                          className="form-select"
-                          value={ticket.type}
-                          onChange={(e) =>
-                            updateGeneratedTicket(
-                              ticket.id,
-                              'type',
-                              e.target.value
-                            )
-                          }
-                        >
-                          {TICKET_TYPES.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: '10px',
-                          marginTop: '10px'
-                        }}
-                      >
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => createTicketInJira(ticket)}
-                          style={{ flex: 1 }}
-                        >
-                          Create on Jira
-                        </button>
-                        <button
-                          className="btn btn-primary"
-                          onClick={() => improveGeneratedTicket(ticket.id)}
-                          style={{ flex: 1 }}
-                        >
-                          Improve Title & Description
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div
-                  style={{ display: 'flex', gap: '10px', marginTop: '20px' }}
-                >
-                  <button
-                    className="btn btn-success"
-                    onClick={createAllGeneratedTickets}
-                  >
-                    Batch Create All
-                  </button>
-                  <button
-                    className="btn btn-primary"
-                    onClick={clearGeneratedTickets}
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </>
-            )}
-          </>
+        {activeTab === TABS.TICKETS && (
+          <TicketsTab
+            tickets={tickets}
+            addTicket={addTicket}
+            updateTicket={updateTicket}
+            reviewWithGPT={reviewWithGPT}
+            createAllTickets={createAllTickets}
+          />
         )}
 
-        {activeTab === 'tickets' && (
-          <>
-            <button className="add-ticket-btn" onClick={addTicket}>
-              <PlusIcon /> Add Ticket
-            </button>
-
-            <div className="tickets-list">
-              {tickets.map((ticket) => (
-                <div key={ticket.id} className="ticket-card">
-                  <div className="form-group">
-                    <label className="form-label">Title</label>
-                    <input
-                      className="form-input"
-                      type="text"
-                      placeholder="Ticket title"
-                      value={ticket.title}
-                      onChange={(e) =>
-                        updateTicket(ticket.id, 'title', e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Description</label>
-                    <textarea
-                      className="form-textarea"
-                      placeholder="Ticket description"
-                      value={ticket.description}
-                      onChange={(e) =>
-                        updateTicket(ticket.id, 'description', e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Type</label>
-                    <select
-                      className="form-select"
-                      value={ticket.type}
-                      onChange={(e) =>
-                        updateTicket(ticket.id, 'type', e.target.value)
-                      }
-                    >
-                      {TICKET_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => reviewWithGPT(ticket.id)}
-                  >
-                    Review with GPT-4.1
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {tickets.length > 0 && (
-              <button className="btn btn-success" onClick={createAllTickets}>
-                Create All
-              </button>
-            )}
-          </>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="card">
-            <h2 className="card-title">API Configuration</h2>
-
-            <div className="form-group">
-              <label className="form-label">Jira API Key</label>
-              <input
-                className="form-input"
-                type="text"
-                value={settings.jiraApiKey}
-                onChange={(e) => updateSettings('jiraApiKey', e.target.value)}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Jira Endpoint</label>
-              <input
-                className="form-input"
-                type="text"
-                value={settings.jiraEndpoint}
-                onChange={(e) => updateSettings('jiraEndpoint', e.target.value)}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">OpenAI API Key</label>
-              <input
-                className="form-input"
-                type="text"
-                value={settings.openAIApiKey}
-                onChange={(e) => updateSettings('openAIApiKey', e.target.value)}
-              />
-            </div>
-          </div>
+        {activeTab === TABS.SETTINGS && (
+          <SettingsTab settings={settings} updateSetting={updateSetting} />
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Application wrapper with providers
+ * @returns {JSX.Element} App component with providers
+ */
+function App() {
+  return (
+    <SettingsProvider>
+      <AppContent />
+    </SettingsProvider>
   );
 }
 

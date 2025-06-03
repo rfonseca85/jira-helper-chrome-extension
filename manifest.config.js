@@ -11,7 +11,7 @@ module.exports = defineManifest({
     open_in_tab: true
   },
   background: {
-    service_worker: 'background.js',
+    service_worker: 'src/background.js',
     type: 'module'
   },
   permissions: ['storage', 'scripting'],

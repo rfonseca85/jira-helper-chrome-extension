@@ -44,7 +44,7 @@ export const useGeneratedTickets = (settings, setStatus) => {
       return;
     }
 
-    setStatus('Generating tickets with GPT-4.1...');
+    setStatus('Generating tickets...');
 
     try {
       const response = await generateTicketsWithAI(
@@ -64,7 +64,7 @@ export const useGeneratedTickets = (settings, setStatus) => {
         setGeneratedTickets(newTickets);
         setStatus(`Generated ${newTickets.length} tickets!`);
       } else {
-        setStatus('No response from GPT-4.1.');
+        setStatus('No response from AI.');
       }
     } catch (error) {
       console.error(error);
@@ -77,7 +77,7 @@ export const useGeneratedTickets = (settings, setStatus) => {
    * @param {string} id - The ticket ID
    */
   const improveGeneratedTicket = async (id) => {
-    setStatus('Improving ticket with GPT-4.1...');
+    setStatus('Improving ticket...');
     const ticket = generatedTickets.find((t) => t.id === id);
 
     if (!ticket || !settings.openAIApiKey) {
@@ -109,12 +109,12 @@ export const useGeneratedTickets = (settings, setStatus) => {
                 : t
             )
           );
-          setStatus('Improved with GPT-4.1!');
+          setStatus('Improved!');
         } else {
-          setStatus('Could not parse GPT-4.1 response.');
+          setStatus('Could not parse response.');
         }
       } else {
-        setStatus('No response from GPT-4.1.');
+        setStatus('No response from AI.');
       }
     } catch (error) {
       setStatus('Error contacting OpenAI API.');

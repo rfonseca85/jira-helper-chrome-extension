@@ -17,12 +17,24 @@ export const generateTicketsWithAI = async (input, apiKey) => {
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
             content:
-              'You are a Scrum expert that creates well-structured Jira tickets. Generate 3-7 tickets based on the input, following best practices for task creation (clear title, actionable description, concise wording). Format each ticket as "Ticket 1\nTitle: <title>\nDescription: <description>\nType: <type>", where type is one of: Task, Bug, Story, Epic. Choose the most appropriate type for each ticket.'
+              'You are a Scrum expert that creates well-structured Jira tickets.\n' +
+              'Generate all tickets based on the input, following best practices for task creation:\n' +
+              '- Clear and concise titles\n' +
+              '- Actionable descriptions\n' +
+              '- Specific acceptance criteria\n' +
+              '- If you receive a list of bullet points, generate a ticket for each bullet point\n' +
+              '- If you recieve a list of tasks, one ticket for each task\n' +
+              '- If you receive a list, one per line, one ticket for each line\n' +
+              '- Appropriate level of detail\n\n' +
+              'Format each ticket as:\n' +
+              'Ticket 1\n' +
+              'Title: <title>\n' +
+              'Description: <description>'
           },
           {
             role: 'user',
@@ -60,7 +72,7 @@ export const improveTicketWithAI = async (ticket, apiKey, isScrum = false) => {
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',

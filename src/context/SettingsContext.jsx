@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { getSettings, saveSettings } from '../services/storage.service';
-import { SETTINGS_KEYS } from '../utils/constants';
+import { SETTINGS_KEYS, DEFAULT_MODEL } from '../utils/constants';
 
 // Create context
 const SettingsContext = createContext();
@@ -12,9 +12,15 @@ const SettingsContext = createContext();
  */
 export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState({
+    // Jira Settings
     [SETTINGS_KEYS.JIRA_API_KEY]: '',
     [SETTINGS_KEYS.JIRA_ENDPOINT]: '',
-    [SETTINGS_KEYS.OPENAI_API_KEY]: ''
+    [SETTINGS_KEYS.JIRA_PROJECT_KEY]: '',
+    [SETTINGS_KEYS.JIRA_USERNAME]: '',
+
+    // AI Settings
+    [SETTINGS_KEYS.OPENAI_API_KEY]: '',
+    [SETTINGS_KEYS.OPENAI_MODEL]: DEFAULT_MODEL
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -23,7 +29,10 @@ export const SettingsProvider = ({ children }) => {
     const loadSettings = async () => {
       try {
         const storedSettings = await getSettings(Object.values(SETTINGS_KEYS));
-        setSettings(storedSettings);
+        setSettings((prev) => ({
+          ...prev,
+          ...storedSettings
+        }));
       } catch (error) {
         console.error('Failed to load settings:', error);
       } finally {

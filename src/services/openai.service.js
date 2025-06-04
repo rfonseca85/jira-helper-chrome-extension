@@ -6,9 +6,14 @@
  * Generates tickets based on input text
  * @param {string} input - The input description or bullet points
  * @param {string} apiKey - The OpenAI API key
+ * @param {string} model - The OpenAI model to use
  * @returns {Promise<Object>} The response from OpenAI
  */
-export const generateTicketsWithAI = async (input, apiKey) => {
+export const generateTicketsWithAI = async (
+  input,
+  apiKey,
+  model = 'gpt-3.5-turbo'
+) => {
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -17,7 +22,7 @@ export const generateTicketsWithAI = async (input, apiKey) => {
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: model,
         messages: [
           {
             role: 'system',
@@ -57,9 +62,15 @@ export const generateTicketsWithAI = async (input, apiKey) => {
  * @param {Object} ticket - The ticket to improve
  * @param {string} apiKey - The OpenAI API key
  * @param {boolean} isScrum - Whether to follow Scrum practices
+ * @param {string} model - The OpenAI model to use
  * @returns {Promise<Object>} The response from OpenAI
  */
-export const improveTicketWithAI = async (ticket, apiKey, isScrum = false) => {
+export const improveTicketWithAI = async (
+  ticket,
+  apiKey,
+  isScrum = false,
+  model = 'gpt-3.5-turbo'
+) => {
   try {
     const systemContent = isScrum
       ? 'You are a helpful assistant that improves Jira ticket titles and descriptions to follow the best Scrum practices.'
@@ -72,7 +83,7 @@ export const improveTicketWithAI = async (ticket, apiKey, isScrum = false) => {
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: model,
         messages: [
           {
             role: 'system',

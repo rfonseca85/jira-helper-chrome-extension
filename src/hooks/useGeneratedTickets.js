@@ -65,7 +65,8 @@ export const useGeneratedTickets = (settings, setStatus) => {
     try {
       const response = await generateTicketsWithAI(
         generationInput,
-        settings.openAIApiKey
+        settings.openAIApiKey,
+        settings.openAIModel || 'gpt-3.5-turbo'
       );
 
       if (
@@ -105,7 +106,8 @@ export const useGeneratedTickets = (settings, setStatus) => {
       const response = await improveTicketWithAI(
         ticket,
         settings.openAIApiKey,
-        true
+        true,
+        settings.openAIModel || 'gpt-3.5-turbo'
       );
 
       if (

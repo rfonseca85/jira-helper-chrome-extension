@@ -242,6 +242,33 @@ body {
   border-radius: 0.75rem;
   box-shadow: var(--card-shadow);
   padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-description {
+  color: var(--light-text);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.form-hint {
+  display: block;
+  color: var(--light-text);
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+.form-hint a {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+.form-hint a:hover {
+  text-decoration: underline;
 }
 
 .add-ticket-btn {

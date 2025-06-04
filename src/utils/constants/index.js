@@ -11,7 +11,6 @@ export const DEFAULT_MODEL = 'gpt-4o';
 // Tab names for navigation
 export const TABS = {
   GENERATE: 'generate',
-  TICKETS: 'tickets',
   SETTINGS: 'settings'
 };
 

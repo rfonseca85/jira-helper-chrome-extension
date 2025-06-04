@@ -1,4 +1,4 @@
-import { HomeIcon, SettingsIcon, GenerateIcon, JiraLogo } from '../ui/Icons';
+import { SettingsIcon, GenerateIcon, JiraLogo } from '../ui/Icons';
 import { TABS } from '../../utils/constants';
 
 /**
@@ -24,15 +24,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             <GenerateIcon />
           </span>
           Generate Tickets
-        </div>
-        <div
-          className={`nav-item ${activeTab === TABS.TICKETS ? 'active' : ''}`}
-          onClick={() => setActiveTab(TABS.TICKETS)}
-        >
-          <span className="nav-icon">
-            <HomeIcon />
-          </span>
-          Home
         </div>
         <div
           className={`nav-item ${activeTab === TABS.SETTINGS ? 'active' : ''}`}

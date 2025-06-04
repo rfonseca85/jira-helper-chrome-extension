@@ -4,12 +4,10 @@ import './App.css';
 // Components
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
-import TicketsTab from './components/tickets/TicketsTab';
 import GenerateTicketsTab from './components/tickets/GenerateTicketsTab';
 import SettingsTab from './components/tickets/SettingsTab';
 
 // Hooks
-import { useTickets } from './hooks/useTickets';
 import { useGeneratedTickets } from './hooks/useGeneratedTickets';
 
 // Context
@@ -18,26 +16,7 @@ import { SettingsProvider, useSettings } from './context/SettingsContext';
 // Constants
 import { TABS } from './utils/constants';
 
-const TICKET_TYPES = ['Task', 'Bug', 'Story', 'Epic'];
-
 // Icons as SVG components
-const HomeIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
-    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-  </svg>
-);
-
 const SettingsIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -52,23 +31,6 @@ const SettingsIcon = () => (
   >
     <circle cx="12" cy="12" r="3"></circle>
     <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>
 );
 
@@ -130,9 +92,6 @@ function AppContent() {
   }, []);
 
   // Initialize hooks
-  const { tickets, addTicket, updateTicket, reviewWithGPT, createAllTickets } =
-    useTickets(settings, setStatus);
-
   const {
     generatedTickets,
     generationInput,
@@ -165,16 +124,6 @@ function AppContent() {
             createTicketInJira={createTicketInJira}
             createAllGeneratedTickets={createAllGeneratedTickets}
             clearGeneratedTickets={clearGeneratedTickets}
-          />
-        )}
-
-        {activeTab === TABS.TICKETS && (
-          <TicketsTab
-            tickets={tickets}
-            addTicket={addTicket}
-            updateTicket={updateTicket}
-            reviewWithGPT={reviewWithGPT}
-            createAllTickets={createAllTickets}
           />
         )}
 

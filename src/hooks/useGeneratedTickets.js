@@ -24,7 +24,23 @@ export const useGeneratedTickets = (settings, setStatus) => {
    */
   const updateGeneratedTicket = (id, field, value) => {
     setGeneratedTickets(
-      generatedTickets.map((t) => (t.id === id ? { ...t, [field]: value } : t))
+      generatedTickets.map((t) => {
+        if (t.id === id) {
+          // Create a new ticket object with the updated field
+          const updatedTicket = { ...t, [field]: value };
+
+          // Clear the 'improved' flag for this field if it exists
+          if (t.improved && t.improved[field]) {
+            updatedTicket.improved = {
+              ...t.improved,
+              [field]: false
+            };
+          }
+
+          return updatedTicket;
+        }
+        return t;
+      })
     );
   };
 
@@ -105,7 +121,15 @@ export const useGeneratedTickets = (settings, setStatus) => {
           setGeneratedTickets(
             generatedTickets.map((t) =>
               t.id === id
-                ? { ...t, title: parsed.title, description: parsed.description }
+                ? {
+                    ...t,
+                    title: parsed.title,
+                    description: parsed.description,
+                    improved: {
+                      title: true,
+                      description: true
+                    }
+                  }
                 : t
             )
           );

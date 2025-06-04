@@ -200,8 +200,8 @@ body {
 
 .tickets-list {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
 }
 
 .ticket-card {
@@ -210,6 +210,21 @@ body {
   box-shadow: var(--card-shadow);
   padding: 1.5rem;
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ticket-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.ticket-card p {
+  margin-bottom: 1rem;
+  line-height: 1.5;
 }
 
 .status-indicator {
@@ -290,4 +305,117 @@ body {
 
 .read-the-docs {
   color: #888;
+}
+
+/* Status Alert Styles */
+.status-alert {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 1.5rem;
+  animation: slide-in 0.3s ease-out forwards;
+  border-left: 4px solid #3b82f6;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-alert.exit {
+  animation: slide-out 0.3s ease-in forwards;
+}
+
+.status-alert-icon {
+  margin-right: 0.75rem;
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-alert-content {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.status-alert-close {
+  background: transparent;
+  border: none;
+  color: var(--light-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.status-alert-close:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Alert types */
+.status-alert.success {
+  border-left-color: var(--success-color);
+}
+
+.status-alert.success .status-alert-icon {
+  color: var(--success-color);
+}
+
+.status-alert.error {
+  border-left-color: #ef4444;
+}
+
+.status-alert.error .status-alert-icon {
+  color: #ef4444;
+}
+
+.status-alert.warning {
+  border-left-color: #f59e0b;
+}
+
+.status-alert.warning .status-alert-icon {
+  color: #f59e0b;
+}
+
+.status-alert.info {
+  border-left-color: #3b82f6;
+}
+
+.status-alert.info .status-alert-icon {
+  color: #3b82f6;
+}
+
+/* Alert animations */
+@keyframes slide-in {
+  0% {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+}
+
+/* Improved field styles */
+.improved-indicator {
+  color: #22c55e;
+  font-size: 0.8rem;
+  font-weight: normal;
+  margin-left: 0.5rem;
 }

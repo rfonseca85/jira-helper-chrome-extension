@@ -91,6 +91,59 @@ function AppContent() {
     document.title = 'Generate Tickets';
   }, []);
 
+  /**
+   * Enhanced status setting function
+   * @param {string} message - The status message
+   * @param {string} type - The message type (success, error, info, warning)
+   */
+  const handleSetStatus = (message) => {
+    // Auto-detect message type if not explicitly provided
+    let messageType = 'info'; // Default type
+
+    if (message) {
+      const lowerMessage = message.toLowerCase();
+
+      // Success patterns
+      if (
+        lowerMessage.includes('success') ||
+        lowerMessage.includes('created') ||
+        lowerMessage.includes('improved') ||
+        lowerMessage.includes('generated')
+      ) {
+        messageType = 'success';
+      }
+      // Error patterns
+      else if (
+        lowerMessage.includes('error') ||
+        lowerMessage.includes('failed') ||
+        lowerMessage.includes('missing') ||
+        lowerMessage.includes('could not')
+      ) {
+        messageType = 'error';
+      }
+      // Warning patterns
+      else if (
+        lowerMessage.includes('warning') ||
+        lowerMessage.includes('please') ||
+        lowerMessage.startsWith('no ')
+      ) {
+        messageType = 'warning';
+      }
+
+      // For "in progress" messages, use info type
+      if (
+        lowerMessage.includes('generating') ||
+        lowerMessage.includes('creating') ||
+        lowerMessage.includes('improving')
+      ) {
+        messageType = 'info';
+      }
+    }
+
+    // Format status object with message and type
+    setStatus(message ? { text: message, type: messageType } : '');
+  };
+
   // Initialize hooks
   const {
     generatedTickets,
@@ -102,7 +155,7 @@ function AppContent() {
     createTicketInJira,
     createAllGeneratedTickets,
     clearGeneratedTickets
-  } = useGeneratedTickets(settings, setStatus);
+  } = useGeneratedTickets(settings, handleSetStatus);
 
   return (
     <div className="app-container">

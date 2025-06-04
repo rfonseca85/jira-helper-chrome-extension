@@ -21,26 +21,48 @@ const TicketCard = ({
   hasCreateButton = false,
   isGenerated = false
 }) => {
+  // Determine if fields have been improved
+  const isTitleImproved = ticket.improved && ticket.improved.title;
+  const isDescriptionImproved = ticket.improved && ticket.improved.description;
+
+  // CSS styles for improved fields
+  const improvedStyle = {
+    borderColor: '#22c55e', // green border
+    boxShadow: '0 0 0 1px #22c55e'
+  };
+
   return (
     <div className="ticket-card">
       <div className="form-group">
-        <label className="form-label">Title</label>
+        <label className="form-label">
+          Title
+          {isTitleImproved && (
+            <span className="improved-indicator"> (Improved)</span>
+          )}
+        </label>
         <input
           className="form-input"
           type="text"
           placeholder="Ticket title"
           value={ticket.title}
           onChange={(e) => onUpdate(ticket.id, 'title', e.target.value)}
+          style={isTitleImproved ? improvedStyle : {}}
         />
       </div>
 
       <div className="form-group">
-        <label className="form-label">Description</label>
+        <label className="form-label">
+          Description
+          {isDescriptionImproved && (
+            <span className="improved-indicator"> (Improved)</span>
+          )}
+        </label>
         <textarea
           className="form-textarea"
           placeholder="Ticket description"
           value={ticket.description}
           onChange={(e) => onUpdate(ticket.id, 'description', e.target.value)}
+          style={isDescriptionImproved ? improvedStyle : {}}
         />
       </div>
 
